@@ -201,8 +201,14 @@ void Parser::parseStatement() {
       } while (get().value == ",");
       // Semicolon is consumed by the loop
     } else if (t.value == "nao") {
+        if (peek().value != ">>") {
+            cerr << "Error: Expected '>>' after 'nao'." << endl;
+            while(peek().value != ";" && peek().type != "EOF") get();
+            if(peek().value == ";") get();
+            return;
+        }
         do {
-            if (peek().value == ">>") get(); // consume '>>'
+            get(); // consume '>>'
             string var = get().value;
             cout << "Enter value for " << var << ": ";
             if (purnoTable.count(var)) {
@@ -210,7 +216,6 @@ void Parser::parseStatement() {
             } else if (vognoTable.count(var)) {
                 cin >> vognoTable[var];
             } else if (shobdoTable.count(var)) {
-                // Reading into string not fully supported with spaces
                 cin >> shobdoTable[var];
             } else {
                 cerr << "Error: Input to undeclared variable '" << var << "'." << endl;
@@ -218,6 +223,12 @@ void Parser::parseStatement() {
         } while (peek().value == ">>");
         if (peek().value == ";") get();  // consume ';'
     } else if (t.value == "dekhao") {
+        if (peek().value != "<<") {
+            cerr << "Error: Expected '<<' after 'dekhao'." << endl;
+            while(peek().value != ";" && peek().type != "EOF") get();
+            if(peek().value == ";") get();
+            return;
+        }
       while (peek().value != ";" && peek().type != "EOF") {
         Token nxt = get();
         if (nxt.type == "STRING") {
