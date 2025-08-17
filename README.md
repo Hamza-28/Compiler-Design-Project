@@ -105,14 +105,28 @@ shobdo message = greeting + " " + name;  // Concatenation
 ## 🛠️ Installation Guide
 
 ### Prerequisites
+
+#### For Linux/Unix Systems
 - **Operating System**: Linux/Unix (Ubuntu 18.04+ recommended)
 - **Compiler**: GCC 7.0+ with C++11 support
 - **Memory**: Minimum 1GB RAM
 - **Storage**: 50MB free space
 
+#### For Windows Systems
+- **Operating System**: Windows 10/11 (recommended)
+- **Compiler**: One of the following options:
+  - **MinGW-w64** (recommended for beginners)
+  - **Microsoft Visual Studio** with C++ support
+  - **Dev-C++** with GCC compiler
+  - **Code::Blocks** with MinGW
+- **Memory**: Minimum 1GB RAM
+- **Storage**: 100MB free space (including compiler tools)
+
 ### Step-by-Step Installation
 
-#### Method 1: Direct Compilation
+#### 🐧 Linux/Unix Installation
+
+##### Method 1: Direct Compilation
 ```bash
 # Clone the repository
 git clone https://github.com/Hamza-28/Compiler-Design-Project.git
@@ -121,11 +135,11 @@ cd Compiler-Design-Project
 # Compile the compiler
 g++ -std=c++11 -O2 -o compiler compiler.cpp tokenizer.cpp parser.cpp
 
-# Verify installation
-./compiler --version  # (if version support is added)
+# Run your program (writes code in code.txt first)
+./compiler
 ```
 
-#### Method 2: Using Makefile (Optional)
+##### Method 2: Using Makefile (Optional)
 ```bash
 # Create Makefile
 cat > Makefile << 'EOF'
@@ -150,9 +164,93 @@ make
 make clean
 ```
 
+#### 🪟 Windows Installation
+
+##### Option 1: Using MinGW-w64 (Recommended)
+
+**Step 1: Install MinGW-w64**
+```powershell
+# Download and install MinGW-w64 from: https://www.mingw-w64.org/downloads/
+# OR use MSYS2 (recommended):
+# 1. Download MSYS2 from: https://www.msys2.org/
+# 2. Install MSYS2
+# 3. Open MSYS2 terminal and run:
+pacman -S mingw-w64-x86_64-gcc
+pacman -S mingw-w64-x86_64-gdb
+pacman -S git
+```
+
+**Step 2: Set up Environment**
+```powershell
+# Add MinGW bin directory to PATH:
+# Add C:\msys64\mingw64\bin to your system PATH environment variable
+# OR if using standalone MinGW: Add C:\MinGW\bin to PATH
+```
+
+**Step 3: Clone and Compile**
+```powershell
+# Open Command Prompt or PowerShell
+# Clone the repository
+git clone https://github.com/Hamza-28/Compiler-Design-Project.git
+cd Compiler-Design-Project
+
+# Compile the compiler
+g++ -std=c++11 -O2 -o compiler.exe compiler.cpp tokenizer.cpp parser.cpp
+
+# Run your program (write code in code.txt first)
+compiler.exe
+```
+
+##### Option 2: Using Visual Studio
+
+**Step 1: Install Visual Studio**
+```powershell
+# Download Visual Studio Community (free) from:
+# https://visualstudio.microsoft.com/vs/community/
+# Make sure to select "C++ development" workload during installation
+```
+
+**Step 2: Create Project**
+```powershell
+# 1. Open Visual Studio
+# 2. Create new "Console App" project
+# 3. Add all .cpp and .h files to the project
+# 4. Build and run the project
+```
+
+**Step 3: Alternative Command Line**
+```powershell
+# Open "Developer Command Prompt for VS"
+# Navigate to project directory
+cd path\to\Compiler-Design-Project
+
+# Compile using cl (Visual Studio compiler)
+cl /EHsc compiler.cpp tokenizer.cpp parser.cpp
+
+# Run the program
+compiler.exe
+```
+
+##### Option 3: Using Dev-C++ or Code::Blocks
+
+**Step 1: Install IDE**
+```powershell
+# Download Dev-C++: https://www.bloodshed.net/devcpp.html
+# OR Code::Blocks: https://www.codeblocks.org/downloads/
+```
+
+**Step 2: Create Project**
+```powershell
+# 1. Open your IDE
+# 2. Create new project (Console Application)
+# 3. Add all source files (compiler.cpp, tokenizer.cpp, parser.cpp)
+# 4. Add header files (tokenizer.h, parser.h)
+# 5. Build and run the project
+```
+
 ### Troubleshooting Installation
 
-#### Common Issues and Solutions
+#### Linux/Unix Issues
 
 **Issue**: `g++: command not found`
 ```bash
@@ -161,6 +259,39 @@ sudo apt update && sudo apt install g++
 
 # CentOS/RHEL
 sudo yum install gcc-c++
+
+# Fedora
+sudo dnf install gcc-c++
+
+# Arch Linux
+sudo pacman -S gcc
+```
+
+#### Windows Issues
+
+**Issue**: `'g++' is not recognized as an internal or external command`
+```powershell
+# Solution 1: Add MinGW to PATH
+# Go to System Properties > Environment Variables
+# Add C:\MinGW\bin or C:\msys64\mingw64\bin to PATH
+
+# Solution 2: Use full path
+C:\MinGW\bin\g++ -std=c++11 -O2 -o compiler.exe compiler.cpp tokenizer.cpp parser.cpp
+
+# Solution 3: Install MinGW-w64 properly
+# Download from https://www.mingw-w64.org/downloads/
+```
+
+**Issue**: Permission denied when running compiler
+```powershell
+# Run Command Prompt as Administrator
+# OR ensure the directory has write permissions
+```
+
+**Issue**: Antivirus blocking compilation
+```powershell
+# Add compiler directory to antivirus exclusions
+# Temporarily disable real-time protection during compilation
 ```
 
 **Issue**: Compilation errors
@@ -174,42 +305,248 @@ g++ -std=c++11 -g -Wall -Wextra -o compiler compiler.cpp tokenizer.cpp parser.cp
 
 ## 📖 Usage Instructions
 
-### Basic Usage
+## 📖 Usage Instructions
+
+### 🚀 How to Use the Compiler
+
+The compiler reads source code from a file called `code.txt` by default. Follow these steps:
+
+#### Step 1: Write Your Program
+Create or edit the `code.txt` file with your program:
+
+**Linux/Unix:**
 ```bash
-# Method 1: Default file (code.txt)
+# Using nano editor
+nano code.txt
+
+# Using vim
+vim code.txt
+
+# Using any text editor
+gedit code.txt    # Ubuntu/GNOME
+kate code.txt     # KDE
+```
+
+**Windows:**
+```powershell
+# Using Notepad
+notepad code.txt
+
+# Using any text editor
+# You can also use VS Code, Notepad++, or any IDE
+```
+
+#### Step 2: Write Your Code
+Add your program to `code.txt`. Here's a simple example:
+```cpp
+shuru
+    purno x = 10, y = 20;
+    purno sum = x + y;
+    dekhao << "Sum: " << sum << "\n";
+shesh
+```
+
+#### Step 3: Compile the Compiler
+You need to compile the compiler first before using it:
+
+**Linux/Unix:**
+```bash
+# Navigate to project directory
+cd Compiler-Design-Project
+
+# Compile the compiler
+g++ -std=c++11 -O2 -o compiler compiler.cpp tokenizer.cpp parser.cpp
+```
+
+**Windows (MinGW):**
+```powershell
+# Navigate to project directory
+cd Compiler-Design-Project
+
+# Compile the compiler
+g++ -std=c++11 -O2 -o compiler.exe compiler.cpp tokenizer.cpp parser.cpp
+```
+
+**Windows (Visual Studio):**
+```powershell
+# Using Developer Command Prompt
+cl /EHsc compiler.cpp tokenizer.cpp parser.cpp
+```
+
+#### Step 4: Run Your Program
+Execute the compiled compiler to run your program:
+
+**Linux/Unix:**
+```bash
+./compiler
+```
+
+**Windows:**
+```powershell
+# If using MinGW or any GCC-based compiler
+compiler.exe
+
+# If using Visual Studio
+compiler.exe
+```
+
+### 📋 Complete Workflow Examples
+
+#### Example 1: Hello World Program
+
+**Step 1: Create code.txt**
+```cpp
+shuru
+    shobdo message = "Hello, World!";
+    dekhao << message << "\n";
+shesh
+```
+
+**Step 2: Compile and Run**
+```bash
+# Linux/Unix
+g++ -std=c++11 -o compiler compiler.cpp tokenizer.cpp parser.cpp
 ./compiler
 
-# Method 2: Specify input file (if implemented)
-./compiler myprogram.txt
-
-# Method 3: Interactive mode (if implemented)
-./compiler --interactive
+# Windows
+g++ -std=c++11 -o compiler.exe compiler.cpp tokenizer.cpp parser.cpp
+compiler.exe
 ```
 
-### Command Line Options
+**Expected Output:**
+```
+Hello, World!
+```
+
+#### Example 2: Interactive Calculator
+
+**Step 1: Write calculator program in code.txt**
+```cpp
+shuru
+    purno num1, num2;
+    dekhao << "Enter first number: ";
+    nao >> num1;
+    dekhao << "Enter second number: ";
+    nao >> num2;
+    
+    purno sum = num1 + num2;
+    dekhao << "Sum: " << sum << "\n";
+shesh
+```
+
+**Step 2: Compile and Run**
 ```bash
-# Basic compilation and execution
-./compiler                      # Uses code.txt as input
+# Compile once
+g++ -std=c++11 -o compiler compiler.cpp tokenizer.cpp parser.cpp
 
-# Development and debugging
-g++ -g -o compiler *.cpp       # Compile with debug symbols
-gdb ./compiler                 # Debug the compiler
-valgrind ./compiler            # Check for memory leaks
+# Run the program
+./compiler
 ```
 
-### Workflow Example
+**Example Interaction:**
+```
+Enter first number: 15
+Enter second number: 25
+Sum: 40
+```
+
+### 🔧 Development Workflow
+
+#### Method 1: Edit and Recompile Each Time
 ```bash
-# 1. Create your program
-nano hello_world.txt
+# 1. Edit your program
+nano code.txt
 
-# 2. Write your code (see examples below)
-
-# 3. Update compiler to read your file (or rename to code.txt)
-cp hello_world.txt code.txt
-
-# 4. Compile and run
-g++ -o compiler compiler.cpp tokenizer.cpp parser.cpp && ./compiler
+# 2. Run the compiler (no need to recompile if compiler source hasn't changed)
+./compiler
 ```
+
+#### Method 2: Using Different File Names
+If you want to work with multiple programs:
+
+**Step 1: Create multiple program files**
+```bash
+# Create different programs
+nano program1.txt
+nano program2.txt
+nano program3.txt
+```
+
+**Step 2: Copy to code.txt when you want to run**
+```bash
+# Run program1
+cp program1.txt code.txt
+./compiler
+
+# Run program2  
+cp program2.txt code.txt
+./compiler
+```
+
+#### Method 3: Batch Script for Convenience
+
+**Linux/Unix (create run_program.sh):**
+```bash
+#!/bin/bash
+if [ "$1" ]; then
+    cp "$1" code.txt
+fi
+g++ -std=c++11 -o compiler compiler.cpp tokenizer.cpp parser.cpp && ./compiler
+```
+
+**Usage:**
+```bash
+chmod +x run_program.sh
+./run_program.sh myprogram.txt
+```
+
+**Windows (create run_program.bat):**
+```batch
+@echo off
+if "%1" neq "" (
+    copy "%1" code.txt
+)
+g++ -std=c++11 -o compiler.exe compiler.cpp tokenizer.cpp parser.cpp
+if %errorlevel% equ 0 (
+    compiler.exe
+)
+```
+
+**Usage:**
+```powershell
+run_program.bat myprogram.txt
+```
+
+### 🐛 Debugging Your Programs
+
+#### Common Issues and Solutions
+
+**Issue**: Program doesn't compile
+```bash
+# Check for syntax errors in your .txt file
+# Make sure you have shuru and shesh
+# Check for proper semicolons and braces
+```
+
+**Issue**: Program runs but gives unexpected output
+```bash
+# Add debug output to trace execution
+dekhao << "Debug: x = " << x << "\n";
+```
+
+**Issue**: Input not working
+```bash
+# Make sure you're using 'nao >>' for input
+# Example: nao >> variable_name;
+```
+
+### 📝 Important Notes
+
+1. **File Name**: The compiler specifically looks for `code.txt` in the current directory
+2. **Compilation**: You only need to recompile the compiler when you modify `compiler.cpp`, `tokenizer.cpp`, or `parser.cpp`
+3. **Program Changes**: When you modify your program in `code.txt`, just run `./compiler` again
+4. **File Encoding**: Use UTF-8 encoding for your `code.txt` file
+5. **Line Endings**: Both Unix (LF) and Windows (CRLF) line endings are supported
 
 ## 📚 Complete Language Reference
 
