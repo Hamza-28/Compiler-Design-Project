@@ -25,6 +25,21 @@ bool isNumber(const string &s) {
   return true;
 }
 
+// Validate identifier name using C++ rules
+bool isValidIdentifier(const string &s) {
+  if (s.empty()) return false;
+  // Cannot start with a digit
+  if (!(isalpha(s[0]) || s[0] == '_')) return false;
+  // Remaining chars must be alnum or underscore
+  for (int i = 1; i < s.size(); ++i) {
+      if (!(isalnum(s[i]) || s[i] == '_')) return false;
+  }
+  // Not a C++ keyword
+  if (keywords.count(s)) return false;
+  
+  return true;
+}
+
 // Remove comments from code
 string removeComments(const string &code) {
   string result;
@@ -93,12 +108,20 @@ vector<Token> tokenize(const string &code) {
 
     if (isspace(c)) {
       if (!buffer.empty()) {
-        if (keywords.count(buffer))
+        if (keywords.count(buffer)) {
           tokens.push_back({"KEYWORD", buffer});
-        else if (isNumber(buffer))
+        }
+        else if (isNumber(buffer)) {
           tokens.push_back({"NUMBER", buffer});
-        else
-          tokens.push_back({"IDENTIFIER", buffer});
+        }
+        else {
+          if (!isValidIdentifier(buffer)) {
+            cerr << "Invalid identifier: " << buffer << endl;
+          }
+          else {
+            tokens.push_back({"IDENTIFIER", buffer});
+          }
+        }
         buffer.clear();
       }
       continue;
@@ -111,8 +134,14 @@ vector<Token> tokenize(const string &code) {
           tokens.push_back({"KEYWORD", buffer});
         else if (isNumber(buffer))
           tokens.push_back({"NUMBER", buffer});
-        else
-          tokens.push_back({"IDENTIFIER", buffer});
+        else {
+          if (!isValidIdentifier(buffer)) {
+            cerr << "Invalid identifier: " << buffer << endl;
+          }
+          else {
+            tokens.push_back({"IDENTIFIER", buffer});
+          }
+        }
         buffer.clear();
       }
 
@@ -165,8 +194,14 @@ vector<Token> tokenize(const string &code) {
       tokens.push_back({"KEYWORD", buffer});
     else if (isNumber(buffer))
       tokens.push_back({"NUMBER", buffer});
-    else
-      tokens.push_back({"IDENTIFIER", buffer});
+    else {
+      if (!isValidIdentifier(buffer)) {
+        cerr << "Invalid identifier: " << buffer << endl;
+      }
+      else {
+        tokens.push_back({"IDENTIFIER", buffer});
+      }
+    }
   }
 
   return tokens;
