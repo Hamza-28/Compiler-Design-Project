@@ -222,54 +222,54 @@ void Parser::parseStatement() {
             }
         } while (peek().value == ">>");
         if (peek().value == ";") get();  // consume ';'
-    } else if (t.value == "dekhao") {
+    } 
+    else if (t.value == "dekhao") {
         if (peek().value != "<<") {
             cerr << "Error: Expected '<<' after 'dekhao'." << endl;
             while(peek().value != ";" && peek().type != "EOF") get();
             if(peek().value == ";") get();
             return;
         }
-      while (peek().value != ";" && peek().type != "EOF") {
-        Token nxt = get();
-        if (nxt.type == "STRING") {
-          string output = nxt.value;
-          // Handle escape sequences
-          for (size_t i = 0; i < output.length(); i++) {
-            if (output[i] == '\\' && i + 1 < output.length()) {
-              if (output[i + 1] == 'n') {
-                cout << '\n';
-                i++;  // skip the 'n'
-              } else if (output[i + 1] == 't') {
-                cout << '\t';
-                i++;  // skip the 't'
-              } else {
-                cout << output[i];
-              }
+        
+        do {
+            get(); // consume '<<'
+            
+            Token nxt = peek();
+            if (nxt.type == "STRING" || nxt.type == "IDENTIFIER" || nxt.type == "PURNO_LITERAL" || nxt.type == "VOGNO_LITERAL") {
+                get(); // consume value
+                // --- Printing logic ---
+                if (nxt.type == "STRING") {
+                    string output = nxt.value;
+                    for (size_t i = 0; i < output.length(); i++) {
+                        if (output[i] == '\\' && i + 1 < output.length()) {
+                            if (output[i + 1] == 'n') { cout << '\n'; i++; }
+                            else if (output[i + 1] == 't') { cout << '\t'; i++; }
+                            else { cout << output[i]; }
+                        } else { cout << output[i]; }
+                    }
+                } else if (nxt.type == "IDENTIFIER") {
+                    if (purnoTable.count(nxt.value)) { cout << purnoTable[nxt.value]; }
+                    else if (vognoTable.count(nxt.value)) { cout << vognoTable[nxt.value]; }
+                    else if (shobdoTable.count(nxt.value)) { cout << shobdoTable[nxt.value]; }
+                    else { cerr << "Error: Undeclared variable '" << nxt.value << "'." << endl; }
+                } else { // PURNO_LITERAL or VOGNO_LITERAL
+                    cout << nxt.value;
+                }
             } else {
-              cout << output[i];
+                cerr << "Error: Expected a variable, string, or number after '<<', but got '" << nxt.value << "'." << endl;
+                while(peek().value != ";" && peek().type != "EOF") get();
+                if(peek().value == ";") get();
+                return;
             }
-          }
-        } else if (nxt.type == "IDENTIFIER") {
-          if (purnoTable.count(nxt.value)) {
-            cout << purnoTable[nxt.value];
-          } else if (vognoTable.count(nxt.value)) {
-            cout << vognoTable[nxt.value];
-          } else if (shobdoTable.count(nxt.value)) {
-            cout << shobdoTable[nxt.value];
-          } else {
-            cerr << "Error: Undeclared variable '" << nxt.value << "'." << endl;
-          }
-        } else if (nxt.type == "PURNO_LITERAL" || nxt.type == "VOGNO_LITERAL") {
-          cout << nxt.value;
-        } else if (nxt.value == "<<") {
-          continue;  // skip output operators
+        } while (peek().value == "<<");
+
+        if (peek().value == ";") {
+            get();  // consume ';'
+        } else {
+            cerr << "Error: Expected ';' at the end of the dekhao statement, but got '" << peek().value << "'." << endl;
+            while(peek().value != ";" && peek().type != "EOF") get();
+            if(peek().value == ";") get();
         }
-      }
-      if (peek().value == ";") get();  // consume ';'
-      if (peek().value != "<<" || (pos > 0 && tokens[pos - 1].value != "<<")) {
-        // Don't add newline if this is part of a chained output
-        cout << endl;
-      }
     } else if (t.type == "IDENTIFIER") {
       // Handle assignments and increment/decrement
       string var = t.value;

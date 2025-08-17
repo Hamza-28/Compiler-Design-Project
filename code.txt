@@ -1,5 +1,5 @@
 shuru
   purno  a, b;
-  nao a >> b;
-  dekhao a << b;
+  nao >> a >> b;
+  dekhao << << a << b;
 shesh
