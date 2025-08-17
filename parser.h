@@ -15,6 +15,7 @@ class Parser {
   Token peek();
   Token get();
   double parseExpression();
+  string parseStringExpression();
   void parseBlock();
   void parseStatement();
   void skipBlock();

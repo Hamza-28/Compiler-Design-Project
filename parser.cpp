@@ -128,6 +128,31 @@ double Parser::parseExpression() {
     return st.empty() ? 0 : st.top();
 }
 
+string Parser::parseStringExpression() {
+    string result = "";
+    bool first = true;
+    while (peek().type != "EOF" && peek().value != ";") {
+        Token t = get();
+        if (t.type == "STRING") {
+            if (!first) {
+                // This is not the first string, so we are concatenating
+            }
+            result += t.value;
+        } else if (t.type == "OPERATOR" && t.value == "+") {
+            // continue to next string
+        } else if (t.type == "IDENTIFIER" && shobdoTable.count(t.value)) {
+            result += shobdoTable[t.value];
+        }
+        else {
+            // Invalid token in string expression
+            cerr << "Error: Invalid token in string expression" << endl;
+            break;
+        }
+        first = false;
+    }
+    return result;
+}
+
 void Parser::parseBlock() {
     while (peek().value != "}" && peek().type != "EOF") {
       parseStatement();
@@ -163,20 +188,15 @@ void Parser::parseStatement() {
 
       if (type == "purno") {
         double result = parseExpression();
-        if (result != floor(result)) {
+        if (abs(result - floor(result)) > 1e-9) {
             cerr << "Error: Type mismatch. Cannot assign a non-integer value to an integer variable '" << var << "'." << endl;
         } else {
-            purnoTable[var] = static_cast<int>(result);
+            purnoTable[var] = int(result);
         }
       } else if (type == "vogno") {
         vognoTable[var] = parseExpression();
       } else if (type == "shobdo") {
-        Token val = get();
-        if (val.type == "STRING") {
-          shobdoTable[var] = val.value;
-        } else {
-          cerr << "Error: Expected a string literal for shobdo declaration." << endl;
-        }
+        shobdoTable[var] = parseStringExpression();
       }
       if (peek().value == ";") get();  // consume ';'
     } else if (t.value == "nao") {

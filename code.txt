@@ -1,6 +1,4 @@
 shuru
-  purno a = 32 + 2;
-  dekhao << a << " " << a << "\n";
-
-  
+  shobdo s = "hello" + " world";
+  dekhao << s;
 shesh
