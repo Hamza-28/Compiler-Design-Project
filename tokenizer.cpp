@@ -154,7 +154,7 @@ vector<Token> tokenize(const string &code) {
     }
 
     if (c == '=' || c == '<' || c == '>' || c == '+' || c == '-' || c == '*' ||
-        c == '/' || c == '(' || c == ')' || c == ';' || c == ',') {
+        c == '/' || c == '(' || c == ')' || c == ';' || c == ',' || c == '&' || c == '|' || c == '!') {
       if (!buffer.empty()) {
         if (keywords.count(buffer))
           tokens.push_back({"KEYWORD", buffer});
@@ -186,6 +186,18 @@ vector<Token> tokenize(const string &code) {
       else if (c == '+' && i + 1 < cleanCode.size() &&
                cleanCode[i + 1] == '+') {
         op += '+';
+        i++;
+      }
+      // Handle && (logical AND)
+      else if (c == '&' && i + 1 < cleanCode.size() &&
+               cleanCode[i + 1] == '&') {
+        op = "&&";
+        i++;
+      }
+      // Handle || (logical OR)
+      else if (c == '|' && i + 1 < cleanCode.size() &&
+               cleanCode[i + 1] == '|') {
+        op = "||";
         i++;
       }
       // Handle << (left shift / output)

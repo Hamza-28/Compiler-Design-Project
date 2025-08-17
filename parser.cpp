@@ -19,28 +19,30 @@ bool Parser::isDeclared(const string& varName) {
     return purnoTable.count(varName) || vognoTable.count(varName) || shobdoTable.count(varName);
 }
 
-double Parser::parseExpression() {
+double Parser::parseExpression(const string& stopAt) {
     vector<string> output;
     stack<string> ops;
 
     auto precedence = [](const string &op) {
       if (op == "<" || op == ">" || op == "<=" || op == ">=" || op == "==" ||
           op == "!=")
-        return 3;
+        return 4;  // Comparison operators
+      if (op == "&&") return 3;  // Logical AND
+      if (op == "||") return 2;  // Logical OR
       if (op == "+" || op == "-") return 1;
-      if (op == "*" || op == "/") return 2;
+      if (op == "*" || op == "/") return 1;
       return 0;
     };
 
-    // Handle comparison operators
-    while (peek().type != "EOF") {
+    // Parse expression until we hit stopAt token or EOF
+    while (peek().type != "EOF" && (stopAt.empty() || peek().value != stopAt)) {
       Token t = peek();
       if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL" || t.type == "IDENTIFIER" ||
           (t.type == "OPERATOR" &&
            (t.value == "+" || t.value == "-" || t.value == "*" ||
             t.value == "/" || t.value == "<" || t.value == ">" ||
             t.value == "<=" || t.value == ">=" || t.value == "==" ||
-            t.value == "!=")) ||
+            t.value == "!=" || t.value == "&&" || t.value == "||")) ||
           t.value == "(") {
         get();  // consume the token
 
@@ -65,8 +67,7 @@ double Parser::parseExpression() {
           ops.push(t.value);
         }
       } else {
-        break;  // Stop if we encounter something that's not part of the
-                // expression
+        break;  // Stop if we encounter something that's not part of the expression
       }
     }
 
@@ -123,108 +124,14 @@ double Parser::parseExpression() {
           st.push(a == b ? 1 : 0);
         else if (tok == "!=")
           st.push(a != b ? 1 : 0);
+        else if (tok == "&&")
+          st.push((a != 0 && b != 0) ? 1 : 0);
+        else if (tok == "||")
+          st.push((a != 0 || b != 0) ? 1 : 0);
       }
     }
     double result = st.empty() ? 0 : st.top();
     return result;
-}
-
-double Parser::parseConditionExpression() {
-    // Parse expression until we hit ')' - specifically for conditions in if/while statements
-    vector<string> output;
-    stack<string> ops;
-    
-    auto precedence = [](const string &op) {
-      if (op == "<" || op == ">" || op == "<=" || op == ">=" || op == "==" ||
-          op == "!=")
-        return 3;
-      if (op == "+" || op == "-") return 1;
-      if (op == "*" || op == "/") return 2;
-      return 0;
-    };
-    
-    // Parse expression until we hit ')'
-    while (peek().value != ")" && peek().type != "EOF") {
-      Token t = peek();
-      if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL" || t.type == "IDENTIFIER" ||
-          (t.type == "OPERATOR" &&
-           (t.value == "+" || t.value == "-" || t.value == "*" ||
-            t.value == "/" || t.value == "<" || t.value == ">" ||
-            t.value == "<=" || t.value == ">=" || t.value == "==" ||
-            t.value == "!=")) ||
-          t.value == "(") {
-        get();
-        
-        if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL")
-          output.push_back(t.value);
-        else if (t.type == "IDENTIFIER")
-          output.push_back("@" + t.value);
-        else if (t.value == "(")
-          ops.push(t.value);
-        else if (t.value == ")") {
-          while (!ops.empty() && ops.top() != "(") {
-            output.push_back(ops.top());
-            ops.pop();
-          }
-          if (!ops.empty()) ops.pop();
-        } else if (t.type == "OPERATOR") {
-          while (!ops.empty() && ops.top() != "(" &&
-                 precedence(ops.top()) >= precedence(t.value)) {
-            output.push_back(ops.top());
-            ops.pop();
-          }
-          ops.push(t.value);
-        }
-      } else {
-        break;
-      }
-    }
-    
-    while (!ops.empty()) {
-      output.push_back(ops.top());
-      ops.pop();
-    }
-    
-    // Evaluate the condition
-    stack<double> st;
-    for (const string &tok : output) {
-      if (tok[0] == '@') {
-        string var = tok.substr(1);
-        if (purnoTable.count(var)) {
-          st.push(purnoTable[var]);
-        } else if (vognoTable.count(var)) {
-          st.push(vognoTable[var]);
-        } else {
-          cerr << "Error: Undeclared variable '" << var << "' used in expression." << endl;
-          return 0;
-        }
-      } else if (isNumber(tok)) {
-        st.push(stod(tok));
-      } else {
-        if (st.size() < 2) {
-          cerr << "Error: Invalid expression" << endl;
-          return 0;
-        }
-        double b = st.top(); st.pop();
-        double a = st.top(); st.pop();
-        if (tok == "+") st.push(a + b);
-        else if (tok == "-") st.push(a - b);
-        else if (tok == "*") st.push(a * b);
-        else if (tok == "/") {
-          if (b == 0) {
-            cerr << "Error: Division by zero" << endl;
-            return 0;
-          }
-          st.push(a / b);
-        } else if (tok == "<") st.push(a < b ? 1 : 0);
-        else if (tok == ">") st.push(a > b ? 1 : 0);
-        else if (tok == "<=") st.push(a <= b ? 1 : 0);
-        else if (tok == ">=") st.push(a >= b ? 1 : 0);
-        else if (tok == "==") st.push(a == b ? 1 : 0);
-        else if (tok == "!=") st.push(a != b ? 1 : 0);
-      }
-    }
-    return st.empty() ? 0 : st.top();
 }
 
 string Parser::parseStringExpression() {
@@ -443,8 +350,8 @@ void Parser::parseStatement() {
       }
       get();  // '('
       
-      // Use the new parseConditionExpression function
-      double cond = parseConditionExpression();
+      // Use the merged parseExpression function with ')' as stop condition
+      double cond = parseExpression(")");
 
       c = peek().value;
       if (c != ")") {
@@ -482,7 +389,7 @@ void Parser::parseStatement() {
           }
           get();  // '('
           
-          double elsifCond = parseConditionExpression();
+          double elsifCond = parseExpression(")");
           
           if (peek().value != ")") {
             cerr << "Error: Expected ')' after nahole jodi condition." << endl;
@@ -529,7 +436,7 @@ void Parser::parseStatement() {
       
       // Store the starting position for condition re-evaluation
       int conditionStart = pos;
-      double cond = parseConditionExpression();
+      double cond = parseExpression(")");
       
       if (peek().value != ")") {
         cerr << "Error: Expected ')' after jotokkhon condition." << endl;
@@ -567,7 +474,7 @@ void Parser::parseStatement() {
         // Re-evaluate the condition
         int savedPos = pos;
         pos = conditionStart;  // Go back to the condition
-        cond = parseConditionExpression();
+        cond = parseExpression(")");
         
         // Skip the ')' after re-evaluating condition
         if (peek().value == ")") get();  // Skip ')'
