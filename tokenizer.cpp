@@ -174,15 +174,14 @@ vector<Token> tokenize(const string &code) {
         op += '>';
         i++;
       }
-      // Handle <= and >=
-      else if ((c == '<' || c == '>') && i + 1 < cleanCode.size() &&
+      // Handle <=, >=, ==, !=
+      else if ((c == '<' || c == '>' || c == '=' || c == '!') && i + 1 < cleanCode.size() &&
                cleanCode[i + 1] == '=') {
         op += '=';
         i++;
       }
-      // Handle ==
-      else if (c == '=' && i + 1 < cleanCode.size() &&
-               cleanCode[i + 1] == '=') {
+      // Handle +=, -=, *=, /=
+      else if ((c == '+' || c == '-' || c == '*' || c == '/') && i + 1 < cleanCode.size() && cleanCode[i+1] == '=') {
         op += '=';
         i++;
       }

@@ -233,7 +233,6 @@ void Parser::parseStatement() {
         
         do {
             get(); // consume '<<'
-            
             Token nxt = peek();
             if (nxt.type == "STRING" || nxt.type == "IDENTIFIER" || nxt.type == "PURNO_LITERAL" || nxt.type == "VOGNO_LITERAL") {
                 get(); // consume value
@@ -274,7 +273,7 @@ void Parser::parseStatement() {
       // Handle assignments and increment/decrement
       string var = t.value;
       if (!isDeclared(var)) {
-        cerr << "Error: Assignment to undeclared variable '" << var << "'." << endl;
+        cerr << "Error: Undeclared variable '" << var << "'." << endl;
         // Skip the rest of the statement to avoid further errors
         while (peek().type != "EOF" && peek().value != ";") {
           get();
@@ -297,6 +296,31 @@ void Parser::parseStatement() {
             shobdoTable[var] = parseStringExpression();
         }
         if (peek().value == ";") get();
+      } else if (op.value == "+=" || op.value == "-=" || op.value == "*=" || op.value == "/=") {
+          if (purnoTable.count(var)) {
+              double result = parseExpression();
+              if (op.value == "+=") purnoTable[var] += result;
+              else if (op.value == "-=") purnoTable[var] -= result;
+              else if (op.value == "*=") purnoTable[var] *= result;
+              else if (op.value == "/=") {
+                  if (result == 0) cerr << "Error: Division by zero." << endl;
+                  else purnoTable[var] /= result;
+              }
+          } else if (vognoTable.count(var)) {
+              double result = parseExpression();
+              if (op.value == "+=") vognoTable[var] += result;
+              else if (op.value == "-=") vognoTable[var] -= result;
+              else if (op.value == "*=") vognoTable[var] *= result;
+              else if (op.value == "/=") {
+                  if (result == 0) cerr << "Error: Division by zero." << endl;
+                  else vognoTable[var] /= result;
+              }
+          } else if (shobdoTable.count(var) && op.value == "+=") {
+              shobdoTable[var] += parseStringExpression();
+          } else {
+              cerr << "Error: Invalid operation '" << op.value << "' for variable '" << var << "'." << endl;
+          }
+          if (peek().value == ";") get();
       } else if (op.value == "++") {
         if(purnoTable.count(var)) purnoTable[var]++;
         else if(vognoTable.count(var)) vognoTable[var]++;
