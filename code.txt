@@ -1,4 +1,5 @@
 shuru
   shobdo s = "hello" + " world";
+  s = s + " new";
   dekhao << s;
 shesh

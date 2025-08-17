@@ -268,16 +268,16 @@ void Parser::parseStatement() {
       Token op = get();
       if (op.value == "=") {
         if (purnoTable.count(var)) {
-            purnoTable[var] = (int)parseExpression();
+            double result = parseExpression();
+            if (result != floor(result)) {
+                cerr << "Error: Type mismatch. Cannot assign a non-integer value to an integer variable '" << var << "'." << endl;
+            } else {
+                purnoTable[var] = static_cast<int>(result);
+            }
         } else if (vognoTable.count(var)) {
             vognoTable[var] = parseExpression();
         } else if (shobdoTable.count(var)) {
-            Token val = get();
-            if(val.type == "STRING") {
-                shobdoTable[var] = val.value;
-            } else {
-                cerr << "Error: Expecting a string for assignment to '" << var << "'." << endl;
-            }
+            shobdoTable[var] = parseStringExpression();
         }
         if (peek().value == ";") get();
       } else if (op.value == "++") {
