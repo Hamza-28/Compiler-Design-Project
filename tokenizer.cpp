@@ -4,7 +4,7 @@
 using namespace std;
 
 unordered_set<string> keywords = {"shuru",     "shesh",  "purno",
-                                  "vogno",     "jodi",   "nohole",
+                                  "vogno",     "jodi",   "nahole",
                                   "jotokkhon", "dekhao", "nao", "shobdo"};
 
 bool isNumber(const string &s) {

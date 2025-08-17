@@ -1,5 +1,12 @@
 shuru
   purno  a, b;
   nao >> a >> b;
-  dekhao << << a << b;
+
+  jodi (a < b) {
+    dekhao << "a is smaller\n";
+  }
+  nahole{
+    dekhao << "a is not smaller\n";
+  }
+
 shesh

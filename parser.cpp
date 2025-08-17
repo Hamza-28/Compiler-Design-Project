@@ -12,7 +12,11 @@ Token Parser::peek() {
 
 Token Parser::get() {
     if (pos < (int)tokens.size()) return tokens[pos++];
-    return {"EOF", ""};
+    return {"EOF",        // skip any following `nahole`
+        while (peek().value == "nahole") {
+          get();  // consume 'nahole'
+          if (peek().value == "jodi") {
+            // skip `nahole jodi (...) {...}`
 }
 
 bool Parser::isDeclared(const std::string& varName) {
@@ -341,7 +345,7 @@ void Parser::parseStatement() {
       if (cond != 0) {
         parseBlock();
         // skip any following `nohole`
-        while (peek().value == "nohole") {
+        while (peek().value == "nahole") {
           get();  // consume 'nohole'
           if (peek().value == "jodi") {
             // skip `nohole jodi (...) {...}`
@@ -358,10 +362,10 @@ void Parser::parseStatement() {
         }
       } else {
         skipBlock();
-        // handle `nohole jodi` and `nohole`
+        // handle `nahole jodi` and `nahole`
         bool executed = false;
-        while (peek().value == "nohole" && !executed) {
-          get();  // consume 'nohole'
+        while (peek().value == "nahole" && !executed) {
+          get();  // consume 'nahole'
           if (peek().value == "jodi") {
             get();  // 'jodi'
             get();  // '('
