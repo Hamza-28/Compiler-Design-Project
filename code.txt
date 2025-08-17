@@ -1,0 +1,4 @@
+shuru
+  /purno a = 32;
+  dekhao << a << " " << a << "\n";
+shesh
