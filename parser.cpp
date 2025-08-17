@@ -162,21 +162,14 @@ void Parser::parseStatement() {
       get();  // '='
 
       if (type == "purno") {
-        Token val = get();
-        if (val.type == "PURNO_LITERAL") {
-            purnoTable[var] = stoi(val.value);
-        } else if (val.type == "VOGNO_LITERAL") {
-            cerr << "Error: Type mismatch. Cannot assign a double value to an integer variable '" << var << "'." << endl;
+        double result = parseExpression();
+        if (result != floor(result)) {
+            cerr << "Error: Type mismatch. Cannot assign a non-integer value to an integer variable '" << var << "'." << endl;
         } else {
-            purnoTable[var] = (int)parseExpression();
+            purnoTable[var] = static_cast<int>(result);
         }
       } else if (type == "vogno") {
-        Token val = get();
-        if (val.type == "VOGNO_LITERAL" || val.type == "PURNO_LITERAL") {
-            vognoTable[var] = stod(val.value);
-        } else {
-            vognoTable[var] = parseExpression();
-        }
+        vognoTable[var] = parseExpression();
       } else if (type == "shobdo") {
         Token val = get();
         if (val.type == "STRING") {
