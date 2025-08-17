@@ -1,4 +1,9 @@
 shuru
-  /purno a = 32;
+  purno a = 32;
   dekhao << a << " " << a << "\n";
+
+  / jodi (a > 3) {
+    dekhao << "Large Number\n";
+  }
+  
 shesh

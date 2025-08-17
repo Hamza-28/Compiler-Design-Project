@@ -21,7 +21,7 @@ bool isNumber(const string &s) {
   return true;
 }
 
-// Validate identifier name using C++ rules
+// Validate identifier name
 bool isValidIdentifier(const string &s) {
   if (s.empty()) return false;
   // Cannot start with a digit
