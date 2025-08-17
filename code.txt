@@ -1,16 +1,26 @@
 shuru
-  purno i = 1, j = 1;
-  
-  dekhao << "Testing nested while and if:\n";
-  jotokkhon (i <= 3) {
-    j = 1;
-    jotokkhon (j <= 3) {
-      dekhao << j << " ";
+  purno a = 3, b = 6;
+  jodi (a < b) {
+    dekhao << "a is smaller\n";
+  }
+  nahole jodi (a == b) {
+    dekhao << "a is equal\n";
+  }
+  nahole {
+    dekhao << "a is larger\n";
+  }
+
+  purno i = 0, j, k;
+  jotokkhon (i < 2) {
+    j = 0;
+    jotokkhon (j < 2) {
+      k = 0;
+      jotokkhon (k < 2) {
+        dekhao << "hello\n";
+        k++;
+      }
       j++;
     }
-    dekhao << "\n";
     i++;
   }
-  
-  dekhao << "All tests completed!\n";
 shesh
