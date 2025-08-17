@@ -15,6 +15,7 @@ class Parser {
   Token peek();
   Token get();
   double parseExpression();
+  double parseConditionExpression(); // For parsing conditions in if/while statements
   string parseStringExpression();
   void parseBlock();
   void parseStatement();

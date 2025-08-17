@@ -12,14 +12,10 @@ Token Parser::peek() {
 
 Token Parser::get() {
     if (pos < (int)tokens.size()) return tokens[pos++];
-    return {"EOF",        // skip any following `nahole`
-        while (peek().value == "nahole") {
-          get();  // consume 'nahole'
-          if (peek().value == "jodi") {
-            // skip `nahole jodi (...) {...}`
+    return {"EOF", ""};
 }
 
-bool Parser::isDeclared(const std::string& varName) {
+bool Parser::isDeclared(const string& varName) {
     return purnoTable.count(varName) || vognoTable.count(varName) || shobdoTable.count(varName);
 }
 
@@ -45,7 +41,7 @@ double Parser::parseExpression() {
             t.value == "/" || t.value == "<" || t.value == ">" ||
             t.value == "<=" || t.value == ">=" || t.value == "==" ||
             t.value == "!=")) ||
-          t.value == "(" || t.value == ")") {
+          t.value == "(") {
         get();  // consume the token
 
         if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL")
@@ -129,6 +125,105 @@ double Parser::parseExpression() {
           st.push(a != b ? 1 : 0);
       }
     }
+    double result = st.empty() ? 0 : st.top();
+    return result;
+}
+
+double Parser::parseConditionExpression() {
+    // Parse expression until we hit ')' - specifically for conditions in if/while statements
+    vector<string> output;
+    stack<string> ops;
+    
+    auto precedence = [](const string &op) {
+      if (op == "<" || op == ">" || op == "<=" || op == ">=" || op == "==" ||
+          op == "!=")
+        return 3;
+      if (op == "+" || op == "-") return 1;
+      if (op == "*" || op == "/") return 2;
+      return 0;
+    };
+    
+    // Parse expression until we hit ')'
+    while (peek().value != ")" && peek().type != "EOF") {
+      Token t = peek();
+      if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL" || t.type == "IDENTIFIER" ||
+          (t.type == "OPERATOR" &&
+           (t.value == "+" || t.value == "-" || t.value == "*" ||
+            t.value == "/" || t.value == "<" || t.value == ">" ||
+            t.value == "<=" || t.value == ">=" || t.value == "==" ||
+            t.value == "!=")) ||
+          t.value == "(") {
+        get();
+        
+        if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL")
+          output.push_back(t.value);
+        else if (t.type == "IDENTIFIER")
+          output.push_back("@" + t.value);
+        else if (t.value == "(")
+          ops.push(t.value);
+        else if (t.value == ")") {
+          while (!ops.empty() && ops.top() != "(") {
+            output.push_back(ops.top());
+            ops.pop();
+          }
+          if (!ops.empty()) ops.pop();
+        } else if (t.type == "OPERATOR") {
+          while (!ops.empty() && ops.top() != "(" &&
+                 precedence(ops.top()) >= precedence(t.value)) {
+            output.push_back(ops.top());
+            ops.pop();
+          }
+          ops.push(t.value);
+        }
+      } else {
+        break;
+      }
+    }
+    
+    while (!ops.empty()) {
+      output.push_back(ops.top());
+      ops.pop();
+    }
+    
+    // Evaluate the condition
+    stack<double> st;
+    for (const string &tok : output) {
+      if (tok[0] == '@') {
+        string var = tok.substr(1);
+        if (purnoTable.count(var)) {
+          st.push(purnoTable[var]);
+        } else if (vognoTable.count(var)) {
+          st.push(vognoTable[var]);
+        } else {
+          cerr << "Error: Undeclared variable '" << var << "' used in expression." << endl;
+          return 0;
+        }
+      } else if (isNumber(tok)) {
+        st.push(stod(tok));
+      } else {
+        if (st.size() < 2) {
+          cerr << "Error: Invalid expression" << endl;
+          return 0;
+        }
+        double b = st.top(); st.pop();
+        double a = st.top(); st.pop();
+        if (tok == "+") st.push(a + b);
+        else if (tok == "-") st.push(a - b);
+        else if (tok == "*") st.push(a * b);
+        else if (tok == "/") {
+          if (b == 0) {
+            cerr << "Error: Division by zero" << endl;
+            return 0;
+          }
+          st.push(a / b);
+        } else if (tok == "<") st.push(a < b ? 1 : 0);
+        else if (tok == ">") st.push(a > b ? 1 : 0);
+        else if (tok == "<=") st.push(a <= b ? 1 : 0);
+        else if (tok == ">=") st.push(a >= b ? 1 : 0);
+        else if (tok == "==") st.push(a == b ? 1 : 0);
+        else if (tok == "!=") st.push(a != b ? 1 : 0);
+      }
+    }
     return st.empty() ? 0 : st.top();
 }
 
@@ -158,6 +253,7 @@ string Parser::parseStringExpression() {
 }
 
 void Parser::parseBlock() {
+    get(); // consume '{'
     while (peek().value != "}" && peek().type != "EOF") {
       parseStatement();
     }
@@ -172,6 +268,12 @@ void Parser::parseStatement() {
         // Skip to the end of the line to attempt recovery
         while(peek().value != ";" && peek().type != "EOF") get();
         if(peek().value == ";") get();
+        return;
+    }
+    if (t.type == "BRACE") {
+        // Braces should be handled by parseBlock, not as statements
+        cerr << "Error: Unexpected brace '" << t.value << "'." << endl;
+        get(); // consume the brace
         return;
     }
 
@@ -337,104 +439,159 @@ void Parser::parseStatement() {
         if (peek().value == ";") get();
       }
     } else if (t.value == "jodi") {
+      string c = peek().value;
+      if (c != "(") {
+        cerr << "Error: Expected '(' after 'jodi', but got '" << c << "'." << endl;
+        while(peek().value != ";" && peek().type != "EOF") get();
+        if(peek().value == ";") get();
+        return;
+      }
       get();  // '('
-      double cond = parseExpression();
-      get();  // ')'
-      get();  // '{'
+      
+      // Use the new parseConditionExpression function
+      double cond = parseConditionExpression();
 
+      c = peek().value;
+      if (c != ")") {
+        cerr << "Error: Expected ')' after jodi condition, but got '" << c << "'." << endl;
+        while(peek().value != ";" && peek().type != "EOF") get();
+        if(peek().value == ";") get();
+        return;
+      }
+      get();  // ')'
+      
+      if (peek().value != "{") {
+        cerr << "Error: Expected '{' after jodi condition." << endl;
+        return;
+      }
+
+      bool conditionMet = false;
       if (cond != 0) {
-        parseBlock();
-        // skip any following `nohole`
-        while (peek().value == "nahole") {
-          get();  // consume 'nohole'
-          if (peek().value == "jodi") {
-            // skip `nohole jodi (...) {...}`
-            get();              // 'jodi'
-            get();              // '('
-            parseExpression();  // skip condition
-            get();              // ')'
-            get();              // '{'
-            skipBlock();
-          } else if (peek().value == "{") {
-            get();  // '{'
-            skipBlock();
-          }
-        }
+        parseBlock();  // Execute the jodi block
+        conditionMet = true;
       } else {
-        skipBlock();
-        // handle `nahole jodi` and `nahole`
-        bool executed = false;
-        while (peek().value == "nahole" && !executed) {
-          get();  // consume 'nahole'
-          if (peek().value == "jodi") {
-            get();  // 'jodi'
-            get();  // '('
-            double elifCond = parseExpression();
-            get();  // ')'
-            get();  // '{'
-            if (elifCond != 0) {
-              parseBlock();
-              executed = true;
-            } else {
-              skipBlock();
-            }
-          } else if (peek().value == "{") {
-            get();  // '{'
-            if (!executed) {
-              parseBlock();
-              executed = true;
-            } else {
-              skipBlock();
-            }
+        skipBlock();   // Skip the jodi block
+      }
+      
+      // Handle nahole jodi (else if) and nahole (else) clauses
+      while (peek().value == "nahole") {
+        get();  // consume 'nahole'
+        
+        if (peek().value == "jodi") {
+          // This is an else if (nahole jodi)
+          get();  // consume 'jodi'
+          
+          if (peek().value != "(") {
+            cerr << "Error: Expected '(' after 'nahole jodi'." << endl;
+            return;
           }
+          get();  // '('
+          
+          double elsifCond = parseConditionExpression();
+          
+          if (peek().value != ")") {
+            cerr << "Error: Expected ')' after nahole jodi condition." << endl;
+            return;
+          }
+          get();  // ')'
+          
+          if (peek().value != "{") {
+            cerr << "Error: Expected '{' after nahole jodi condition." << endl;
+            return;
+          }
+          
+          if (!conditionMet && elsifCond != 0) {
+            parseBlock();  // Execute this else if block
+            conditionMet = true;
+          } else {
+            skipBlock();   // Skip this else if block
+          }
+        } else {
+          // This is a regular else (nahole)
+          if (peek().value != "{") {
+            cerr << "Error: Expected '{' after nahole." << endl;
+            return;
+          }
+          
+          if (!conditionMet) {
+            parseBlock();  // Execute the else block
+          } else {
+            skipBlock();   // Skip the else block
+          }
+          break;  // else must be the last clause
         }
       }
+    } else if (t.value == "nahole") {
+      cerr << "Error: 'nahole' can only be used after a 'jodi' statement." << endl;
+      while(peek().value != ";" && peek().type != "EOF") get();
+      if(peek().value == ";") get();
     } else if (t.value == "jotokkhon") {
-      int loopStart = pos - 1;  // Save position before 'jotokkhon'
-
-      get();  // '('
-      double cond = parseExpression();
-      get();  // ')'
-      get();  // '{'
-
-      // Save the loop body tokens
-      vector<Token> loopBody;
-      int braceCount = 1;
-      while (braceCount > 0 && peek().type != "EOF") {
-        Token bodyToken = get();
-        if (bodyToken.value == "{")
-          braceCount++;
-        else if (bodyToken.value == "}") {
-          braceCount--;
-          if (braceCount == 0) break;
-        }
-        loopBody.push_back(bodyToken);
+      if (peek().value != "(") {
+        cerr << "Error: Expected '(' after 'jotokkhon'." << endl;
+        return;
       }
-
+      get();  // '('
+      
+      // Store the starting position for condition re-evaluation
+      int conditionStart = pos;
+      double cond = parseConditionExpression();
+      
+      if (peek().value != ")") {
+        cerr << "Error: Expected ')' after jotokkhon condition." << endl;
+        return;
+      }
+      get();  // ')'
+      
+      if (peek().value != "{") {
+        cerr << "Error: Expected '{' after jotokkhon condition." << endl;
+        return;
+      }
+      get(); // consume '{'
+      
+      // Store the position at the start of the loop body (after '{')
+      int loopBodyStart = pos;
+      
+      // Find the end of the loop body by counting braces
+      int braceCount = 1;
+      int loopBodyEnd = pos;
+      while (braceCount > 0 && loopBodyEnd < tokens.size()) {
+        if (tokens[loopBodyEnd].value == "{") braceCount++;
+        else if (tokens[loopBodyEnd].value == "}") braceCount--;
+        loopBodyEnd++;
+      }
+      loopBodyEnd--; // Position before the closing '}'
+      
       // Execute the loop
       while (cond != 0) {
-        // Create a new parser for the loop body
-        Parser bodyParser(loopBody);
-        bodyParser.purnoTable = purnoTable;
-        bodyParser.vognoTable = vognoTable;
-        bodyParser.shobdoTable = shobdoTable;
-        bodyParser.run();
-        purnoTable = bodyParser.purnoTable;
-        vognoTable = bodyParser.vognoTable;
-        shobdoTable = bodyParser.shobdoTable;
-
-        // Re-evaluate condition
+        // Execute the loop body
+        pos = loopBodyStart;
+        while (pos < loopBodyEnd) {
+          parseStatement();
+        }
+        
+        // Re-evaluate the condition
         int savedPos = pos;
-        pos = loopStart + 1;  // Position after 'jotokkhon'
-        get();                // '()'
-        cond = parseExpression();
-        get();           // ')'
-        pos = savedPos;  // Restore position
+        pos = conditionStart;  // Go back to the condition
+        cond = parseConditionExpression();
+        
+        // Skip the ')' after re-evaluating condition
+        if (peek().value == ")") get();  // Skip ')'
+        pos = savedPos;  // Restore position after loop body
+      }
+      
+      // Position after the closing '}'
+      pos = loopBodyEnd + 1;
+      
+      // Skip the loop body if we're not executing it anymore
+      if (cond == 0) {
+        pos = loopBodyStart;
+        skipBlock();  // Skip the { ... } block
       }
     }
 }
 
 void Parser::skipBlock() {
+    get(); // consume '{'
     int depth = 1;
     while (depth > 0 && peek().type != "EOF") {
       Token x = get();
