@@ -1,36 +1,25 @@
 shuru
-purno i = 1, j = 1, limit = 3;
-
-dekhao << "Testing logical operators in jotokkhon (while) loops:\n";
-
-// Test 1: Simple AND condition
-dekhao << "Test 1 - AND condition (i <= 2 && j <= 2):\n";
-i = 1;
-j = 1;
-jotokkhon (i <= 2 && j <= 2) {
-  dekhao << "i=" << i << ", j=" << j << "\n";
-  i++;
-  j++;
-}
-
-// Test 2: OR condition  
-dekhao << "Test 2 - OR condition (i <= 1 || j <= 3):\n";
-i = 1;
-j = 1;
-jotokkhon (i <= 1 || j <= 3) {
-  dekhao << "i=" << i << ", j=" << j << "\n";
-  i++;
-  j++;
-}
-
-// Test 3: Complex condition
-dekhao << "Test 3 - Complex condition (i <= 2 && j <= 2 && i != j):\n";
-i = 1;
-j = 2;
-jotokkhon (i <= 2 && j <= 3 && i != j) {
-  dekhao << "i=" << i << ", j=" << j << "\n";
-  i++;
-}
-
-dekhao << "All while loop tests completed!\n";
+    // Variable declarations
+    purno x = 10, y = 20;
+    vogno pi = 3.14159;
+    shobdo name = "Hello World";
+    
+    // Conditional statements
+    jodi (x < y && x != 0) {
+        dekhao << "x is less than y and not zero\n";
+    } nahole jodi (x == y) {
+        dekhao << "x equals y\n";
+    } nahole {
+        dekhao << "x is greater than y\n";
+    }
+    
+    // While loops
+    jotokkhon (x <= y) {
+        dekhao << "x = " << x << "\n";
+        x++;
+    }
+    
+    // Input/Output
+    nao >> x;
+    dekhao << "You entered: " << x << "\n";
 shesh

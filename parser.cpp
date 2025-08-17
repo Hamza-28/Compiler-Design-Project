@@ -218,7 +218,6 @@ void Parser::parseStatement() {
         do {
             get(); // consume '>>'
             string var = get().value;
-            cout << "Enter value for " << var << ": ";
             if (purnoTable.count(var)) {
                 cin >> purnoTable[var];
             } else if (vognoTable.count(var)) {
