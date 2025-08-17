@@ -229,13 +229,9 @@ double Parser::parseConditionExpression() {
 
 string Parser::parseStringExpression() {
     string result = "";
-    bool first = true;
     while (peek().type != "EOF" && peek().value != ";") {
         Token t = get();
         if (t.type == "STRING") {
-            if (!first) {
-                // This is not the first string, so we are concatenating
-            }
             result += t.value;
         } else if (t.type == "OPERATOR" && t.value == "+") {
             // continue to next string
@@ -247,7 +243,6 @@ string Parser::parseStringExpression() {
             cerr << "Error: Invalid token in string expression" << endl;
             break;
         }
-        first = false;
     }
     return result;
 }
