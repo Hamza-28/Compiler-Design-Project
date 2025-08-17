@@ -35,7 +35,7 @@ double Parser::parseExpression() {
     // Handle comparison operators
     while (peek().type != "EOF") {
       Token t = peek();
-      if (t.type == "NUMBER" || t.type == "IDENTIFIER" ||
+      if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL" || t.type == "IDENTIFIER" ||
           (t.type == "OPERATOR" &&
            (t.value == "+" || t.value == "-" || t.value == "*" ||
             t.value == "/" || t.value == "<" || t.value == ">" ||
@@ -44,7 +44,7 @@ double Parser::parseExpression() {
           t.value == "(" || t.value == ")") {
         get();  // consume the token
 
-        if (t.type == "NUMBER")
+        if (t.type == "PURNO_LITERAL" || t.type == "VOGNO_LITERAL")
           output.push_back(t.value);
         else if (t.type == "IDENTIFIER")
           output.push_back("@" + t.value);
@@ -136,7 +136,17 @@ void Parser::parseBlock() {
 }
 
 void Parser::parseStatement() {
-    Token t = get();
+    Token t = peek(); // Use peek to check the token without consuming
+    if (t.type == "OPERATOR") {
+        get(); // Consume the invalid token
+        cerr << "Error: Invalid statement. Statements cannot start with an operator." << endl;
+        // Skip to the end of the line to attempt recovery
+        while(peek().value != ";" && peek().type != "EOF") get();
+        if(peek().value == ";") get();
+        return;
+    }
+
+    t = get(); // Consume the token now that we know it's not an operator
     if (t.value == "purno" || t.value == "vogno" || t.value == "shobdo") {
       string type = t.value;
       string var = get().value;
@@ -152,9 +162,21 @@ void Parser::parseStatement() {
       get();  // '='
 
       if (type == "purno") {
-        purnoTable[var] = (int)parseExpression();
+        Token val = get();
+        if (val.type == "PURNO_LITERAL") {
+            purnoTable[var] = stoi(val.value);
+        } else if (val.type == "VOGNO_LITERAL") {
+            cerr << "Error: Type mismatch. Cannot assign a double value to an integer variable '" << var << "'." << endl;
+        } else {
+            purnoTable[var] = (int)parseExpression();
+        }
       } else if (type == "vogno") {
-        vognoTable[var] = parseExpression();
+        Token val = get();
+        if (val.type == "VOGNO_LITERAL" || val.type == "PURNO_LITERAL") {
+            vognoTable[var] = stod(val.value);
+        } else {
+            vognoTable[var] = parseExpression();
+        }
       } else if (type == "shobdo") {
         Token val = get();
         if (val.type == "STRING") {
@@ -207,7 +229,7 @@ void Parser::parseStatement() {
           } else {
             cerr << "Error: Undeclared variable '" << nxt.value << "'." << endl;
           }
-        } else if (nxt.type == "NUMBER") {
+        } else if (nxt.type == "PURNO_LITERAL" || nxt.type == "VOGNO_LITERAL") {
           cout << nxt.value;
         } else if (nxt.value == "<<") {
           continue;  // skip output operators
@@ -366,7 +388,16 @@ void Parser::skipBlock() {
 }
 
 void Parser::run() {
-    while (peek().type != "EOF") {
+    if (get().value != "shuru") {
+        cerr << "Error: Expected 'shuru' at the beginning of the program." << endl;
+        return;
+    }
+
+    while (peek().value != "shesh" && peek().type != "EOF") {
       parseStatement();
+    }
+
+    if (get().value != "shesh") {
+        cerr << "Error: Expected 'shesh' at the end of the program." << endl;
     }
 }

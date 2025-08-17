@@ -108,7 +108,11 @@ vector<Token> tokenize(const string &code) {
           tokens.push_back({"KEYWORD", buffer});
         }
         else if (isNumber(buffer)) {
-          tokens.push_back({"NUMBER", buffer});
+          if (buffer.find('.') != string::npos) {
+            tokens.push_back({"VOGNO_LITERAL", buffer});
+          } else {
+            tokens.push_back({"PURNO_LITERAL", buffer});
+          }
         }
         else {
           if (!isValidIdentifier(buffer)) {
@@ -128,8 +132,13 @@ vector<Token> tokenize(const string &code) {
       if (!buffer.empty()) {
         if (keywords.count(buffer))
           tokens.push_back({"KEYWORD", buffer});
-        else if (isNumber(buffer))
-          tokens.push_back({"NUMBER", buffer});
+        else if (isNumber(buffer)) {
+          if (buffer.find('.') != string::npos) {
+            tokens.push_back({"VOGNO_LITERAL", buffer});
+          } else {
+            tokens.push_back({"PURNO_LITERAL", buffer});
+          }
+        }
         else {
           if (!isValidIdentifier(buffer)) {
             cerr << "Invalid identifier: " << buffer << endl;
@@ -188,8 +197,13 @@ vector<Token> tokenize(const string &code) {
   if (!buffer.empty()) {
     if (keywords.count(buffer))
       tokens.push_back({"KEYWORD", buffer});
-    else if (isNumber(buffer))
-      tokens.push_back({"NUMBER", buffer});
+    else if (isNumber(buffer)) {
+      if (buffer.find('.') != string::npos) {
+        tokens.push_back({"VOGNO_LITERAL", buffer});
+      } else {
+        tokens.push_back({"PURNO_LITERAL", buffer});
+      }
+    }
     else {
       if (!isValidIdentifier(buffer)) {
         cerr << "Invalid identifier: " << buffer << endl;

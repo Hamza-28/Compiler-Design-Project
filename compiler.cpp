@@ -1,17 +1,22 @@
 #include "parser.h"
 #include <bits/stdc++.h>
+#include <fstream>
 
 using namespace std;
 
-// ---------------------- MAIN ----------------------
 int main() {
-  string code = R"(
-shuru
-  purno x = 9;
-  vogno a = 3.976;
-  purno a = 3;
-  dekhao << a;
-)";
+  ifstream file("code.txt");
+  if (!file.is_open()) {
+    cerr << "Error: Could not open code.txt" << endl;
+    return 1;
+  }
+
+  string code;
+  string line;
+  while (getline(file, line)) {
+    code += line + '\n';
+  }
+  file.close();
 
   auto tokens = tokenize(code);
   Parser parser(tokens);
