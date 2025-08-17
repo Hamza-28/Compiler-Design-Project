@@ -1,7 +1,6 @@
-#include <bits/stdc++.h>
-#include "tokenizer.h"
 #include "parser.h"
-
+#include "tokenizer.h"
+#include <bits/stdc++.h>
 using namespace std;
 
 Parser::Parser(vector<Token> tks) : tokens(tks) {}
@@ -14,6 +13,10 @@ Token Parser::peek() {
 Token Parser::get() {
     if (pos < (int)tokens.size()) return tokens[pos++];
     return {"EOF", ""};
+}
+
+bool Parser::isDeclared(const std::string& varName) {
+    return purnoTable.count(varName) || vognoTable.count(varName) || shobdoTable.count(varName);
 }
 
 double Parser::parseExpression() {
@@ -77,7 +80,14 @@ double Parser::parseExpression() {
     for (const string &tok : output) {
       if (tok[0] == '@') {
         string var = tok.substr(1);
-        st.push(symbolTable[var]);
+        if (purnoTable.count(var)) {
+          st.push(purnoTable[var]);
+        } else if (vognoTable.count(var)) {
+          st.push(vognoTable[var]);
+        } else {
+          cerr << "Error: Undeclared variable '" << var << "' used in expression." << endl;
+          return 0;
+        }
       } else if (isNumber(tok)) {
         st.push(stod(tok));
       } else {
@@ -127,20 +137,45 @@ void Parser::parseBlock() {
 
 void Parser::parseStatement() {
     Token t = get();
-    if (t.value == "purno" || t.value == "vogno") {
+    if (t.value == "purno" || t.value == "vogno" || t.value == "shobdo") {
+      string type = t.value;
       string var = get().value;
+
+      if (isDeclared(var)) {
+        cerr << "Error: Redeclaration of variable '" << var << "'." << endl;
+        // Skip to end of statement
+        while(peek().value != ";" && peek().type != "EOF") get();
+        if(peek().value == ";") get();
+        return;
+      }
+
       get();  // '='
-      double val = parseExpression();
-      symbolTable[var] = val;
+
+      if (type == "purno") {
+        purnoTable[var] = (int)parseExpression();
+      } else if (type == "vogno") {
+        vognoTable[var] = parseExpression();
+      } else if (type == "shobdo") {
+        Token val = get();
+        if (val.type == "STRING") {
+          shobdoTable[var] = val.value;
+        } else {
+          cerr << "Error: Expected a string literal for shobdo declaration." << endl;
+        }
+      }
       if (peek().value == ";") get();  // consume ';'
     } else if (t.value == "nao") {
       get();  // '>>'
       string var = get().value;
       if (peek().value == ";") get();  // consume ';'
       cout << "Enter value for " << var << ": ";
-      double input;
-      cin >> input;
-      symbolTable[var] = input;
+      if (purnoTable.count(var)) {
+          cin >> purnoTable[var];
+      } else if (vognoTable.count(var)) {
+          cin >> vognoTable[var];
+      } else if (shobdoTable.count(var)) {
+          cin >> shobdoTable[var];
+      }
     } else if (t.value == "dekhao") {
       while (peek().value != ";" && peek().type != "EOF") {
         Token nxt = get();
@@ -163,7 +198,15 @@ void Parser::parseStatement() {
             }
           }
         } else if (nxt.type == "IDENTIFIER") {
-          cout << symbolTable[nxt.value];
+          if (purnoTable.count(nxt.value)) {
+            cout << purnoTable[nxt.value];
+          } else if (vognoTable.count(nxt.value)) {
+            cout << vognoTable[nxt.value];
+          } else if (shobdoTable.count(nxt.value)) {
+            cout << shobdoTable[nxt.value];
+          } else {
+            cerr << "Error: Undeclared variable '" << nxt.value << "'." << endl;
+          }
         } else if (nxt.type == "NUMBER") {
           cout << nxt.value;
         } else if (nxt.value == "<<") {
@@ -178,16 +221,39 @@ void Parser::parseStatement() {
     } else if (t.type == "IDENTIFIER") {
       // Handle assignments and increment/decrement
       string var = t.value;
+      if (!isDeclared(var)) {
+        cerr << "Error: Assignment to undeclared variable '" << var << "'." << endl;
+        // Skip the rest of the statement to avoid further errors
+        while (peek().type != "EOF" && peek().value != ";") {
+          get();
+        }
+        if (peek().value == ";") get();
+        return;
+      }
       Token op = get();
       if (op.value == "=") {
-        double val = parseExpression();
-        symbolTable[var] = val;
+        if (purnoTable.count(var)) {
+            purnoTable[var] = (int)parseExpression();
+        } else if (vognoTable.count(var)) {
+            vognoTable[var] = parseExpression();
+        } else if (shobdoTable.count(var)) {
+            Token val = get();
+            if(val.type == "STRING") {
+                shobdoTable[var] = val.value;
+            } else {
+                cerr << "Error: Expecting a string for assignment to '" << var << "'." << endl;
+            }
+        }
         if (peek().value == ";") get();
       } else if (op.value == "++") {
-        symbolTable[var]++;
+        if(purnoTable.count(var)) purnoTable[var]++;
+        else if(vognoTable.count(var)) vognoTable[var]++;
+        else cerr << "Error: Cannot increment non-numeric variable '" << var << "'." << endl;
         if (peek().value == ";") get();
       } else if (op.value == "--") {
-        symbolTable[var]--;
+        if(purnoTable.count(var)) purnoTable[var]--;
+        else if(vognoTable.count(var)) vognoTable[var]--;
+        else cerr << "Error: Cannot decrement non-numeric variable '" << var << "'." << endl;
         if (peek().value == ";") get();
       }
     } else if (t.value == "jodi") {
@@ -269,9 +335,13 @@ void Parser::parseStatement() {
       while (cond != 0) {
         // Create a new parser for the loop body
         Parser bodyParser(loopBody);
-        bodyParser.symbolTable = symbolTable;  // Share symbol table
+        bodyParser.purnoTable = purnoTable;
+        bodyParser.vognoTable = vognoTable;
+        bodyParser.shobdoTable = shobdoTable;
         bodyParser.run();
-        symbolTable = bodyParser.symbolTable;  // Update symbol table
+        purnoTable = bodyParser.purnoTable;
+        vognoTable = bodyParser.vognoTable;
+        shobdoTable = bodyParser.shobdoTable;
 
         // Re-evaluate condition
         int savedPos = pos;

@@ -9,8 +9,8 @@ int main() {
 shuru
   purno x = 9;
   vogno a = 3.976;
-
-  dekhao << b;
+  purno a = 3;
+  dekhao << a;
 )";
 
   auto tokens = tokenize(code);

@@ -6,18 +6,21 @@
 using namespace std;
 
 class Parser {
+  unordered_map<string, int> purnoTable;
+  unordered_map<string, double> vognoTable;
+  unordered_map<string, string> shobdoTable;
   vector<Token> tokens;
   int pos = 0;
-  unordered_map<string, double> symbolTable;
-  
+
   Token peek();
   Token get();
   double parseExpression();
   void parseBlock();
   void parseStatement();
   void skipBlock();
-  
-public:
+  bool isDeclared(const string& varName);
+
+ public:
   Parser(vector<Token> tks);
   void run();
 };
