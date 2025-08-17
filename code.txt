@@ -1,26 +1,3 @@
 shuru
-  purno a = 3, b = 6;
-  jodi (a < b) {
-    dekhao << "a is smaller\n";
-  }
-  nahole jodi (a == b) {
-    dekhao << "a is equal\n";
-  }
-  nahole {
-    dekhao << "a is larger\n";
-  }
-
-  purno i = 0, j, k;
-  jotokkhon (i < 2) {
-    j = 0;
-    jotokkhon (j < 2) {
-      k = 0;
-      jotokkhon (k < 2) {
-        dekhao << "hello\n";
-        k++;
-      }
-      j++;
-    }
-    i++;
-  }
+dekhao << "hello\n";
 shesh
