@@ -128,7 +128,7 @@ vector<Token> tokenize(const string &code) {
     }
 
     if (c == '=' || c == '<' || c == '>' || c == '+' || c == '-' || c == '*' ||
-        c == '/' || c == '{' || c == '}' || c == '(' || c == ')' || c == ';') {
+        c == '/' || c == '{' || c == '}' || c == '(' || c == ')' || c == ';' || c == ',') {
       if (!buffer.empty()) {
         if (keywords.count(buffer))
           tokens.push_back({"KEYWORD", buffer});

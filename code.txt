@@ -1,5 +1,5 @@
 shuru
-  shobdo s = "hello" + " world";
-  s = s + " new";
-  dekhao << s;
+  purno a, b;
+  nao >> a >> b;
+  dekhao << a << " " << b << "\n";
 shesh

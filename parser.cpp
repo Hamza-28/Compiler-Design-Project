@@ -174,43 +174,49 @@ void Parser::parseStatement() {
     t = get(); // Consume the token now that we know it's not an operator
     if (t.value == "purno" || t.value == "vogno" || t.value == "shobdo") {
       string type = t.value;
-      string var = get().value;
-
-      if (isDeclared(var)) {
-        cerr << "Error: Redeclaration of variable '" << var << "'." << endl;
-        // Skip to end of statement
-        while(peek().value != ";" && peek().type != "EOF") get();
-        if(peek().value == ";") get();
-        return;
-      }
-
-      get();  // '='
-
-      if (type == "purno") {
-        double result = parseExpression();
-        if (abs(result - floor(result)) > 1e-9) {
-            cerr << "Error: Type mismatch. Cannot assign a non-integer value to an integer variable '" << var << "'." << endl;
+      do {
+        string var = get().value;
+        if (isDeclared(var)) {
+          cerr << "Error: Redeclaration of variable '" << var << "'." << endl;
         } else {
-            purnoTable[var] = int(result);
+          if (type == "purno") purnoTable[var] = 0;
+          else if (type == "vogno") vognoTable[var] = 0.0;
+          else if (type == "shobdo") shobdoTable[var] = "";
         }
-      } else if (type == "vogno") {
-        vognoTable[var] = parseExpression();
-      } else if (type == "shobdo") {
-        shobdoTable[var] = parseStringExpression();
-      }
-      if (peek().value == ";") get();  // consume ';'
+        if (peek().value == "=") {
+            get(); // consume '='
+            if (type == "purno") {
+                double result = parseExpression();
+                if (result != floor(result)) {
+                    cerr << "Error: Type mismatch. Cannot assign a non-integer value to an integer variable '" << var << "'." << endl;
+                } else {
+                    purnoTable[var] = static_cast<int>(result);
+                }
+            } else if (type == "vogno") {
+                vognoTable[var] = parseExpression();
+            } else if (type == "shobdo") {
+                shobdoTable[var] = parseStringExpression();
+            }
+        }
+      } while (get().value == ",");
+      // Semicolon is consumed by the loop
     } else if (t.value == "nao") {
-      get();  // '>>'
-      string var = get().value;
-      if (peek().value == ";") get();  // consume ';'
-      cout << "Enter value for " << var << ": ";
-      if (purnoTable.count(var)) {
-          cin >> purnoTable[var];
-      } else if (vognoTable.count(var)) {
-          cin >> vognoTable[var];
-      } else if (shobdoTable.count(var)) {
-          cin >> shobdoTable[var];
-      }
+        do {
+            if (peek().value == ">>") get(); // consume '>>'
+            string var = get().value;
+            cout << "Enter value for " << var << ": ";
+            if (purnoTable.count(var)) {
+                cin >> purnoTable[var];
+            } else if (vognoTable.count(var)) {
+                cin >> vognoTable[var];
+            } else if (shobdoTable.count(var)) {
+                // Reading into string not fully supported with spaces
+                cin >> shobdoTable[var];
+            } else {
+                cerr << "Error: Input to undeclared variable '" << var << "'." << endl;
+            }
+        } while (peek().value == ">>");
+        if (peek().value == ";") get();  // consume ';'
     } else if (t.value == "dekhao") {
       while (peek().value != ";" && peek().type != "EOF") {
         Token nxt = get();
