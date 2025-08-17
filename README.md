@@ -75,7 +75,6 @@ A sophisticated custom programming language compiler built in C++ featuring Beng
 | 4 | `<`, `>`, `<=`, `>=` | Relational operators | Left-to-right |
 | 5 | `==`, `!=` | Equality operators | Left-to-right |
 | 6 | `&&` | Logical AND | Left-to-right |
-| 7 | `||` | Logical OR | Left-to-right |
 
 ### Data Types and Operations
 
@@ -135,7 +134,7 @@ cd Compiler-Design-Project
 # Compile the compiler
 g++ -std=c++11 -O2 -o compiler compiler.cpp tokenizer.cpp parser.cpp
 
-# Run your program (writes code in code.txt first)
+# Run your program (write code in code.txt first)
 ./compiler
 ```
 
@@ -302,8 +301,6 @@ g++ --version
 # Compile with debug information
 g++ -std=c++11 -g -Wall -Wextra -o compiler compiler.cpp tokenizer.cpp parser.cpp
 ```
-
-## 📖 Usage Instructions
 
 ## 📖 Usage Instructions
 
@@ -851,37 +848,8 @@ shuru
 shesh
 ```
 
-### Example 4: Number Guessing Game
-```cpp
-shuru
-    purno secretNumber = 42, guess, attempts = 0, maxAttempts = 5;
-    
-    dekhao << "Number Guessing Game!\n";
-    dekhao << "I'm thinking of a number between 1 and 100.\n";
-    dekhao << "You have " << maxAttempts << " attempts.\n\n";
-    
-    jotokkhon (attempts < maxAttempts) {
-        dekhao << "Attempt " << (attempts + 1) << ": Enter your guess: ";
-        nao >> guess;
-        attempts++;
-        
-        jodi (guess == secretNumber) {
-            dekhao << "Congratulations! You guessed it in " << attempts << " attempts!\n";
-            break;  // Note: break not implemented, so we'll use a different approach
-        } nahole jodi (guess < secretNumber) {
-            dekhao << "Too low! Try again.\n";
-        } nahole {
-            dekhao << "Too high! Try again.\n";
-        }
-    }
-    
-    jodi (attempts == maxAttempts && guess != secretNumber) {
-        dekhao << "Game over! The number was " << secretNumber << "\n";
-    }
-shesh
-```
 
-### Example 5: Grade Calculator
+### Example 4: Grade Calculator
 ```cpp
 shuru
     purno numSubjects, i = 1;
@@ -920,7 +888,7 @@ shuru
 shesh
 ```
 
-### Example 6: Complex Logical Conditions
+### Example 5: Complex Logical Conditions
 ```cpp
 shuru
     purno age, income, creditScore;
